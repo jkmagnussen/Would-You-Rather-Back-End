@@ -15,6 +15,9 @@ $app->get("/", function(Request $request, Response $response, $array) {
     return $response;
 });
 
+
+
+
 $app->post("/login", function(Request $request, Response $response, $args) {
     $data = $request->getParsedBody();
     $response->getBody()->write($data["name"]);
@@ -53,8 +56,14 @@ $app->get("/questions", function(Request $request, Response $response, $args)use
     $questions = $database->getQuestionsWithOptions();
     $response->getBody()->write(json_encode($questions));
     return $response->withHeader("Content-Type", "application/json");
-
-    
 });
+
+$app->post("/questions", function(Request $request, Response $response, $args)use($database){
+    $createQuestion = $database->createQuestionWithOptions($request->getParsedBody());
+    $response->getBody()->write(json_encode($createQuestion));
+    return $response->withHeader("Content-Type", "application/json");
+});
+
+
 
 $app->run();

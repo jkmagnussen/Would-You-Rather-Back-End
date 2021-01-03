@@ -41,15 +41,20 @@ class Database{
 
     public function createQuestionWithOptions($questionData){
         $this->pdo->beginTransaction();
-        $this->pdo->prepare("INSERT INTO questions (authorId, timeStamp) VALUES (?, GETDATE())");
-        $this->pdo->execute(array($questionData["authorId"]));
-        $questionId=$this->pdo->lastInsertId();
-        
-        foreach($questionData["options"] as $option){
-            $this->pdo->prepare("INSERT INTO optionsForQuestions (questionId, title) VALUES(?, ?)");
-            $this->pdo->execute(array($questionId, $option["title"]));
+        $this->pdo->prepare("INSERT INTO questions (authorId, timeStamp) VALUES (?, GETDATE())")->execute(array($questionData["authorId"]));
+        /* 
+            {
+                author_id:'blah',
+                options:[
+                    {title:"Option one},
+                    {title:"Option two}
+                ]
+            }
+        */
+        foreach((array) $questionData["options"] as $option){
+            $this->pdo->prepare("INSERT INTO optionsForQuestions (questionId, title) VALUES(?, ?)")->execute(array($questionId, $option["title"]));
         }
         $this->pdo->commit();
+        return array("status"=>"success");
     }
-
 }
