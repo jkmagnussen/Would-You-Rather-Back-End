@@ -15,14 +15,13 @@ $app->get("/", function(Request $request, Response $response, $array) {
     return $response;
 });
 
-
-
-
 $app->post("/login", function(Request $request, Response $response, $args) {
     $data = $request->getParsedBody();
     $response->getBody()->write($data["name"]);
     return $response;
 });
+
+// Edit user //
 
 $app->patch("/user/{name}", function(Request $request, Response $response, $args){
     $userObject = array(
@@ -45,12 +44,15 @@ $app->patch("/user/{name}", function(Request $request, Response $response, $args
     return $response;
 });
 
+// Retrieve all users //
+
 $app->get("/users", function(Request $request, Response $response, $args)use($database){
     $users = $database->getAllUsers();
     $response->getBody()->write(json_encode($users));
     return $response->withHeader("Content-Type", "application/json");
 });
 
+// Retrieve user questions //
 
 $app->get("/questions", function(Request $request, Response $response, $args)use($database){
     $questions = $database->getQuestionsWithOptions();
@@ -58,12 +60,18 @@ $app->get("/questions", function(Request $request, Response $response, $args)use
     return $response->withHeader("Content-Type", "application/json");
 });
 
+$app->get("/questions/answered", function(Request $request, Response $response, $args)use($database){
+    $questions = $database->getQuestionsForUsersWithAnsweredStatus(true);
+    $response->getBody()->write(json_encode($questions));
+    return $response->withHeader("Content-Type", "application/json");
+});
+
+// Create user question //
+
 $app->post("/questions", function(Request $request, Response $response, $args)use($database){
     $createQuestion = $database->createQuestionWithOptions($request->getParsedBody());
     $response->getBody()->write(json_encode($createQuestion));
     return $response->withHeader("Content-Type", "application/json");
 });
-
-
 
 $app->run();

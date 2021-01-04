@@ -1,5 +1,4 @@
 # Ignore files related to API keyss
 
 .env
-
 /vendor
