@@ -54,28 +54,49 @@ class Database{
     }
 
     public function getQuestionsForUsersWithAnsweredStatus($answeredStatus){
-        $userAnsweredOptionForQuestion = $this->pdo->prepare("SELECT * FROM userOptionChoice WHERE userId = ?");
-        $userAnsweredOptionForQuestion->execute(array(1));
-        $answeredQuestionsArray = array();
-        foreach((array) $userAnsweredOptionForQuestion->fetchAll(\PDO::FETCH_ASSOC) as $answeredOptionForQuestion){
-            $questionId = $answeredOptionForQuestion['questionId'];
-            $question = $this->pdo->prepare("SELECT questions.id AS questionId, questions.authorId, users.userName AS authorName, users.avatarUrl AS authorAvatarUrl FROM questions INNER JOIN users ON questions.authorId = users.id WHERE questions.id = ?");
-            $question->execute(array($questionId));
-            $answeredQuestionsArray[$questionId] = $question->fetchAll(\PDO::FETCH_ASSOC)[0];
-            $answeredQuestionsArray[$questionId]["answeredOption"] = $answeredOptionForQuestion["OptionId"];
+        $getUserSelectedAndOtherOptionsWithSelectionIdAndQuestionAndAuthor = $this->pdo->prepare("SELECT userOptionChoice.userId as chooserUserId,
+            IF(userOptionChoice.optionId = optionsForQuestions.id, TRUE, FALSE) AS chosen, 
+            optionsForQuestions.title AS optionTitle,
+            optionsForQuestions.id AS optionId,
+            users.userName AS authorName,
+            users.avatarUrl AS authorAvatarUrl
+            FROM `userOptionChoice` 
+            LEFT JOIN optionsForQuestions ON 
+            userOptionChoice.questionId = optionsForQuestions.questionId 
+            LEFT JOIN questions ON 
+            questions.id = optionsForQuestions.questionId 
+            LEFT JOIN users ON 
+            questions.authorId = users.id 
+            WHERE userOptionChoice.userId = ?");
+
+        $getUserSelectedAndOtherOptionsWithSelectionIdAndQuestionAndAuthor->execute(array(1));
+
+        $databaseResults = $getUserSelectedAndOtherOptionsWithSelectionIdAndQuestionAndAuthor->fetchAll(\PDO::FETCH_ASSOC);
+
+        $dataForJsonResults = array();
+        $dataForJsonResults["authorName"] = $databaseResults[0]["authorName"];
+        $dataForJsonResults["authorAvatarUrl"] = $databaseResults[0]["authorAvatarUrl"];
+        $dataForJsonResults["options"] = array();
+
+
+        foreach((array) $databaseResults as $resultRow){
+            $dataForJsonResults["options"][$resultRow["optionId"]] = array("title" => $resultRow["optionTitle"], "chosen" => $resultRow["chosen"]);
         }
 
-        foreach($answeredQuestionsArray as $key => $value){
-            $optionsForQuestion = $this->pdo->prepare("SELECT * FROM optionsForQuestions WHERE questionId = ?");
-            $optionsForQuestion->execute(array($value['questionId']));
-            $answeredQuestionsArray[$key]["options"] = $optionsForQuestion->fetchAll(\PDO::FETCH_ASSOC);
-        }
+        return $dataForJsonResults;
+    }
 
-        return $answeredQuestionsArray;
+    public function createVoteForQuestionById($questionId,$optionId,$userId){
+        $createAnswerForQuestionQuery = $this->pdo->prepare("INSERT INTO userOptionChoice (userId, OptionId, questionId) VALUES (:userId, :optionId, :questionId)");
+        $createAnswerForQuestionQuery->execute(array("userId"=>$userId, "optionId"=>$optionId, "questionId"=>$questionId));
+        return array("status"=>"success");
     }
 }
 
 /*
+
+SELECT * FROM `userOptionChoice` LEFT JOIN optionsForQuestions ON userOptionChoice.questionId = optionsForQuestions.questionId 
+
 SELECT questions.id AS 'questionId', questions.authorId, optionsForQuestions.id AS 'optionId', optionsForQuestions.title FROM optionsForQuestions INNER JOIN questions ON questions.id = optionsForQuestions.questionId
 
 
