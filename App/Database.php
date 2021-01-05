@@ -74,6 +74,7 @@ class Database{
         return $answeredQuestionsArray;
     }
 }
+
 /*
 SELECT questions.id AS 'questionId', questions.authorId, optionsForQuestions.id AS 'optionId', optionsForQuestions.title FROM optionsForQuestions INNER JOIN questions ON questions.id = optionsForQuestions.questionId
 
@@ -85,7 +86,11 @@ SELECT questions.id AS 'questionId', questions.authorId, optionsForQuestions.id 
 
 */
 
-// /questions/answered
+// questions/answered
+
+// mock data 
+
+
 /*{
     1):{
         options:[{title:"blah", id:1}, {"blah2", id:2}],
