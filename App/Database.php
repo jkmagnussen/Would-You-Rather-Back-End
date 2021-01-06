@@ -11,6 +11,7 @@ class Database{
         if ($this->pdo == null ) {
             $this->pdo = new \PDO("mysql:dbname=".$_ENV["DB_NAME"].";host=".$_ENV["DB_HOST"], $_ENV["DB_USER"], $_ENV["DB_PASSWORD"]);
         }
+        $this->pdo->setAttribute( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_WARNING );
         return $this;
     }
 
@@ -78,7 +79,6 @@ class Database{
         $dataForJsonResults["authorAvatarUrl"] = $databaseResults[0]["authorAvatarUrl"];
         $dataForJsonResults["options"] = array();
 
-
         foreach((array) $databaseResults as $resultRow){
             $dataForJsonResults["options"][$resultRow["optionId"]] = array("title" => $resultRow["optionTitle"], "chosen" => $resultRow["chosen"]);
         }
@@ -87,9 +87,22 @@ class Database{
     }
 
     public function createVoteForQuestionById($questionId,$optionId,$userId){
-        $createAnswerForQuestionQuery = $this->pdo->prepare("INSERT INTO userOptionChoice (userId, OptionId, questionId) VALUES (:userId, :optionId, :questionId)");
-        $createAnswerForQuestionQuery->execute(array("userId"=>$userId, "optionId"=>$optionId, "questionId"=>$questionId));
-        return array("status"=>"success");
+        $checkIfUserOptionChoiceExistsQuery = $this->pdo->prepare("SELECT id FROM userOptionChoice WHERE userId=? AND questionId=? AND OptionId=?");
+        $checkIfUserOptionChoiceExistsQuery->execute(array($questionId, $optionId, $userId));
+        if(count($checkIfUserOptionChoiceExistsQuery->fetchAll(\PDO::FETCH_ASSOC)) > 0){
+            $deleteOptionVoteQuery = $this->pdo->prepare("DELETE FROM userOptionChoice WHERE userId=? AND questionId=?");
+            $deleteOptionVoteQuery->execute(array($userId, $questionId));
+            return array("status"=>"success", "chosen"=>false);
+        } else{
+            $createAnswerForQuestionQuery = $this->pdo->prepare("INSERT INTO IF NOT EXISTS userOptionChoice (userId, OptionId, questionId) VALUES (:userId, :optionId, :questionId)");
+            $queryResult = $createAnswerForQuestionQuery->execute(array(":userId"=>$userId, ":optionId"=>$optionId, ":questionId"=>$questionId));
+            if(!$queryResult){
+                return array("status"=>"failed", "message"=>$this->pdo->errorInfo());
+            }else{
+                return array("status"=>"success", "chosen" => true);
+            }
+        }
+
     }
 }
 
