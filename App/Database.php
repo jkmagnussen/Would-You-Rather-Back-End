@@ -107,6 +107,7 @@ class Database{
 }
 
 /*
+Redundant code 
 
 SELECT * FROM `userOptionChoice` LEFT JOIN optionsForQuestions ON userOptionChoice.questionId = optionsForQuestions.questionId 
 
