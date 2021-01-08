@@ -82,11 +82,10 @@ class Database{
         foreach((array) $databaseResults as $resultRow){
             $dataForJsonResults["options"][$resultRow["optionId"]] = array("title" => $resultRow["optionTitle"], "chosen" => $resultRow["chosen"]);
         }
-
         return $dataForJsonResults;
     }
 
-    public function createVoteForQuestionById($questionId,$optionId,$userId){
+    public function toggleVoteForQuestionById($questionId,$optionId,$userId){
         $checkIfUserOptionChoiceExistsQuery = $this->pdo->prepare("SELECT id FROM userOptionChoice WHERE userId=? AND questionId=? AND OptionId=?");
         $checkIfUserOptionChoiceExistsQuery->execute(array($questionId, $optionId, $userId));
         if(count($checkIfUserOptionChoiceExistsQuery->fetchAll(\PDO::FETCH_ASSOC)) > 0){
@@ -102,7 +101,6 @@ class Database{
                 return array("status"=>"success", "chosen" => true);
             }
         }
-
     }
 }
 

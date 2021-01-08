@@ -76,8 +76,7 @@ $app->post("/questions", function(Request $request, Response $response, $args)us
 
 $app->post("/questions/{questionId}/answer", function(Request $request, Response $response, $args)use($database){
     $userInputData = $request->getParsedBody();
-    var_dump($userInputData);
-    $addVote = $database->createVoteForQuestionById($args["questionId"], $userInputData["optionId"], $userInputData["userId"]);
+    $addVote = $database->toggleVoteForQuestionById($args["questionId"], $userInputData["optionId"], $userInputData["userId"]);
     $response->getBody()->write(json_encode($addVote));
     return $response->withHeader("Content-Type", "application/json");
 });
