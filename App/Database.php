@@ -75,7 +75,7 @@ public $pdo;
                 $getUserSelectedAndOtherOptionsWithSelectionIdAndQuestionAndAuthor->execute(array(1));
                 $databaseResults = $getUserSelectedAndOtherOptionsWithSelectionIdAndQuestionAndAuthor->fetchAll(\PDO::FETCH_ASSOC);
         }else{
-// else code needs changing to be placed in its own function for correct formatting
+// else code needs changing to be placed in its own function for correct formattingg
 
             $filteredUnansweredQuestions = $this->pdo->prepare(
                 "SELECT (SELECT FALSE) AS chosen,
