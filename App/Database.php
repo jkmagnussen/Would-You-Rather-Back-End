@@ -6,7 +6,7 @@ $dotenv=new Dotenv();
 $dotenv->load(__DIR__."/../.env");
 
 class Database{
-    public $pdo;
+public $pdo;
     public function connect(){
         if ($this->pdo == null ) {
             $this->pdo = new \PDO("mysql:dbname=".$_ENV["DB_NAME"].";host=".$_ENV["DB_HOST"], $_ENV["DB_USER"], $_ENV["DB_PASSWORD"]);
@@ -55,24 +55,44 @@ class Database{
     }
 
     public function getQuestionsForUsersWithAnsweredStatus($answeredStatus){
-        $getUserSelectedAndOtherOptionsWithSelectionIdAndQuestionAndAuthor = $this->pdo->prepare("SELECT userOptionChoice.userId as chooserUserId,
-            IF(userOptionChoice.optionId = optionsForQuestions.id, TRUE, FALSE) AS chosen, 
-            optionsForQuestions.title AS optionTitle,
-            optionsForQuestions.id AS optionId,
-            users.userName AS authorName,
-            users.avatarUrl AS authorAvatarUrl
-            FROM `userOptionChoice` 
-            LEFT JOIN optionsForQuestions ON 
-            userOptionChoice.questionId = optionsForQuestions.questionId 
-            LEFT JOIN questions ON 
-            questions.id = optionsForQuestions.questionId 
-            LEFT JOIN users ON 
-            questions.authorId = users.id 
-            WHERE userOptionChoice.userId = ?");
+        $databaseResults = array();
+        if($answeredStatus){
+            $getUserSelectedAndOtherOptionsWithSelectionIdAndQuestionAndAuthor = $this->pdo->prepare(
+                "SELECT userOptionChoice.userId as chooserUserId,
+                IF(userOptionChoice.optionId = optionsForQuestions.id, TRUE, FALSE) AS chosen, 
+                optionsForQuestions.title AS optionTitle,
+                optionsForQuestions.id AS optionId,
+                users.userName AS authorName,
+                users.avatarUrl AS authorAvatarUrl
+                FROM `userOptionChoice`
+                LEFT JOIN optionsForQuestions ON 
+                userOptionChoice.questionId = optionsForQuestions.questionId 
+                LEFT JOIN questions ON 
+                questions.id = optionsForQuestions.questionId 
+                LEFT JOIN users ON 
+                questions.authorId = users.id 
+                WHERE userOptionChoice.userId = ?");
+                $getUserSelectedAndOtherOptionsWithSelectionIdAndQuestionAndAuthor->execute(array(1));
+                $databaseResults = $getUserSelectedAndOtherOptionsWithSelectionIdAndQuestionAndAuthor->fetchAll(\PDO::FETCH_ASSOC);
+        }else{
+// else code needs changing to be placed in its own function for correct formatting
 
-        $getUserSelectedAndOtherOptionsWithSelectionIdAndQuestionAndAuthor->execute(array(1));
-
-        $databaseResults = $getUserSelectedAndOtherOptionsWithSelectionIdAndQuestionAndAuthor->fetchAll(\PDO::FETCH_ASSOC);
+            $filteredUnansweredQuestions = $this->pdo->prepare(
+                "SELECT (SELECT FALSE) AS chosen,
+                optionsForQuestions.title AS optionTitle,
+                optionsForQuestions.id AS optionId,
+                users.userName AS authorName,
+                users.avatarUrl AS authorAvatarUrl,
+                questions.id AS mQuestionId
+                FROM questions 
+                LEFT JOIN optionsForQuestions ON 
+                questions.id = optionsForQuestions.questionId 
+                LEFT JOIN users ON 
+                questions.authorId = users.id
+                WHERE NOT EXISTS (SELECT userId FROM userOptionChoice WHERE userId = ? AND questionId = questions.id)");
+                $filteredUnansweredQuestions->execute(array(1));
+                $databaseResults = $filteredUnansweredQuestions->fetchAll(\PDO::FETCH_ASSOC);
+        }
 
         $dataForJsonResults = array();
         $dataForJsonResults["authorName"] = $databaseResults[0]["authorName"];
@@ -86,14 +106,14 @@ class Database{
     }
 
     public function toggleVoteForQuestionById($questionId,$optionId,$userId){
-        $checkIfUserOptionChoiceExistsQuery = $this->pdo->prepare("SELECT id FROM userOptionChoice WHERE userId=? AND questionId=? AND OptionId=?");
-        $checkIfUserOptionChoiceExistsQuery->execute(array($questionId, $optionId, $userId));
-        if(count($checkIfUserOptionChoiceExistsQuery->fetchAll(\PDO::FETCH_ASSOC)) > 0){
+        $checkIfUserOptionChoiceExistsQuery = $this->pdo->prepare("SELECT id FROM userOptionChoice WHERE userId=:userId AND questionId=:questionId AND OptionId=:optionId");
+        $checkIfUserOptionChoiceExistsQuery->execute(array(":questionId"=>$questionId, ":optionId"=>$optionId, ":userId"=>$userId));
+        if($checkIfUserOptionChoiceExistsQuery->rowCount() > 0){
             $deleteOptionVoteQuery = $this->pdo->prepare("DELETE FROM userOptionChoice WHERE userId=? AND questionId=?");
             $deleteOptionVoteQuery->execute(array($userId, $questionId));
             return array("status"=>"success", "chosen"=>false);
         } else{
-            $createAnswerForQuestionQuery = $this->pdo->prepare("INSERT INTO IF NOT EXISTS userOptionChoice (userId, OptionId, questionId) VALUES (:userId, :optionId, :questionId)");
+            $createAnswerForQuestionQuery = $this->pdo->prepare("INSERT INTO userOptionChoice (userId, OptionId, questionId) VALUES (:userId, :optionId, :questionId)");
             $queryResult = $createAnswerForQuestionQuery->execute(array(":userId"=>$userId, ":optionId"=>$optionId, ":questionId"=>$questionId));
             if(!$queryResult){
                 return array("status"=>"failed", "message"=>$this->pdo->errorInfo());

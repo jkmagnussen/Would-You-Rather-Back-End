@@ -66,6 +66,12 @@ $app->get("/questions/answered", function(Request $request, Response $response, 
     return $response->withHeader("Content-Type", "application/json");
 });
 
+$app->get("/questions/unanswered", function(Request $request, Response $response, $args)use($database){
+    $questions = $database->getQuestionsForUsersWithAnsweredStatus(false);
+    $response->getBody()->write(json_encode($questions));
+    return $response->withHeader("Content-Type", "application/json");
+});
+
 // Create user question //
 
 $app->post("/questions", function(Request $request, Response $response, $args)use($database){
