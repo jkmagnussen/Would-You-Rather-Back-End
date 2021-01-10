@@ -125,7 +125,7 @@ public $pdo;
 }
 
 /*
-Redundant code 
+Redundant codee
 
 SELECT * FROM `userOptionChoice` LEFT JOIN optionsForQuestions ON userOptionChoice.questionId = optionsForQuestions.questionId 
 
