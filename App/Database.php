@@ -57,50 +57,57 @@ public $pdo;
     public function getQuestionsForUsersWithAnsweredStatus($answeredStatus){
         $databaseResults = array();
         if($answeredStatus){
+
             $getUserSelectedAndOtherOptionsWithSelectionIdAndQuestionAndAuthor = $this->pdo->prepare(
-                "SELECT userOptionChoice.userId as chooserUserId,
-                IF(userOptionChoice.optionId = optionsForQuestions.id, TRUE, FALSE) AS chosen, 
-                optionsForQuestions.title AS optionTitle,
-                optionsForQuestions.id AS optionId,
-                users.userName AS authorName,
-                users.avatarUrl AS authorAvatarUrl
-                FROM `userOptionChoice`
-                LEFT JOIN optionsForQuestions ON 
-                userOptionChoice.questionId = optionsForQuestions.questionId 
-                LEFT JOIN questions ON 
-                questions.id = optionsForQuestions.questionId 
-                LEFT JOIN users ON 
-                questions.authorId = users.id 
-                WHERE userOptionChoice.userId = ?");
-                $getUserSelectedAndOtherOptionsWithSelectionIdAndQuestionAndAuthor->execute(array(1));
-                $databaseResults = $getUserSelectedAndOtherOptionsWithSelectionIdAndQuestionAndAuthor->fetchAll(\PDO::FETCH_ASSOC);
+            "SELECT userOptionChoice.userId as chooserUserId,
+            questions.id AS mQuestionId,
+            IF(userOptionChoice.optionId = optionsForQuestions.id, TRUE, FALSE) AS chosen, 
+            optionsForQuestions.title AS optionTitle,
+            optionsForQuestions.id AS optionId,
+            users.userName AS authorName,
+            users.avatarUrl AS authorAvatarUrl
+            FROM `userOptionChoice`
+            LEFT JOIN optionsForQuestions ON 
+            userOptionChoice.questionId = optionsForQuestions.questionId 
+            LEFT JOIN questions ON 
+            questions.id = optionsForQuestions.questionId 
+            LEFT JOIN users ON 
+            questions.authorId = users.id 
+            WHERE userOptionChoice.userId = ?"
+            );
+
+            $getUserSelectedAndOtherOptionsWithSelectionIdAndQuestionAndAuthor->execute(array(1));
+            $databaseResults = $getUserSelectedAndOtherOptionsWithSelectionIdAndQuestionAndAuthor->fetchAll(\PDO::FETCH_ASSOC);
+
         }else{
-// else code needs changing to be placed in its own function for correct formattingg
-
             $filteredUnansweredQuestions = $this->pdo->prepare(
-                "SELECT (SELECT FALSE) AS chosen,
-                optionsForQuestions.title AS optionTitle,
-                optionsForQuestions.id AS optionId,
-                users.userName AS authorName,
-                users.avatarUrl AS authorAvatarUrl,
-                questions.id AS mQuestionId
-                FROM questions 
-                LEFT JOIN optionsForQuestions ON 
-                questions.id = optionsForQuestions.questionId 
-                LEFT JOIN users ON 
-                questions.authorId = users.id
-                WHERE NOT EXISTS (SELECT userId FROM userOptionChoice WHERE userId = ? AND questionId = questions.id)");
-                $filteredUnansweredQuestions->execute(array(1));
-                $databaseResults = $filteredUnansweredQuestions->fetchAll(\PDO::FETCH_ASSOC);
+            "SELECT (SELECT FALSE) AS chosen,
+            optionsForQuestions.title AS optionTitle,
+            optionsForQuestions.id AS optionId,
+            users.userName AS authorName,
+            users.avatarUrl AS authorAvatarUrl,
+            questions.id AS mQuestionId
+            FROM questions 
+            LEFT JOIN optionsForQuestions ON 
+            questions.id = optionsForQuestions.questionId 
+            LEFT JOIN users ON 
+            questions.authorId = users.id
+            WHERE NOT EXISTS (SELECT userId FROM userOptionChoice WHERE userId = ? AND questionId = questions.id)"
+            );
+            $filteredUnansweredQuestions->execute(array(1));
+            $databaseResults = $filteredUnansweredQuestions->fetchAll(\PDO::FETCH_ASSOC);
         }
-
+        
         $dataForJsonResults = array();
-        $dataForJsonResults["authorName"] = $databaseResults[0]["authorName"];
-        $dataForJsonResults["authorAvatarUrl"] = $databaseResults[0]["authorAvatarUrl"];
-        $dataForJsonResults["options"] = array();
 
-        foreach((array) $databaseResults as $resultRow){
-            $dataForJsonResults["options"][$resultRow["optionId"]] = array("title" => $resultRow["optionTitle"], "chosen" => $resultRow["chosen"]);
+        foreach((array) $databaseResults as $row){
+            if(!array_key_exists($row["mQuestionId"], $dataForJsonResults)){
+                $dataForJsonResults[$row["mQuestionId"]] = array("authorName"=>$row["authorName"], "authorAvatarUrl"=>$row["authorAvatarUrl"]);
+                $dataForJsonResults[$row["mQuestionId"]]["options"] = array();
+                $dataForJsonResults[$row["mQuestionId"]]["options"][$row["optionId"]] = array("title"=>$row["optionTitle"], "chosen"=>$row["chosen"]);
+            }else{
+                $dataForJsonResults[$row["mQuestionId"]]["options"][$row["optionId"]] = array("title"=>$row["optionTitle"], "chosen"=>$row["chosen"]);
+            }
         }
         return $dataForJsonResults;
     }
