@@ -10,6 +10,21 @@ $database = (new Database())->connect();
 
 $app = AppFactory::create();
 
+$app->options("/{roots:.+}", function(Request $request, Response $response, $args){
+return $response;
+}
+);
+
+$app->add(function($request, $handler){
+    $response = $handler->handle($request);
+    return $response
+        ->withHeader("Access-Control-Allow-Origin","http://localhost:3000")
+        ->withHeader("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Accept, Origin, Authorization")
+        ->withHeader("Acess-Control-Allow-Methods","GET, POST, PUT, DELETE, PATCH, OPTIONS");
+});
+
+$app->addRoutingMiddleware();
+
 $app->get("/", function(Request $request, Response $response, $array) {
     $response->getBody()->write("Hello World");
     return $response;
