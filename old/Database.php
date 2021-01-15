@@ -5,6 +5,17 @@ use Symfony\Component\Dotenv\Dotenv;
 $dotenv=new Dotenv();
 $dotenv->load(__DIR__."/../.env");
 
+ /*
+ 
+FROM .ENV - 
+
+DB_HOST=sql146.main-hosting.eu
+DB_NAME=u490444716_wouldYouRather
+DB_USER=u490444716_username
+DB_PASSWORD=Password1
+
+ */
+
 class Database{
 public $pdo;
     public function connect(){
