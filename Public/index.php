@@ -1,105 +1,55 @@
 <?php
 
-use \Psr\Http\Message\ServerRequestInterface as Request;
-use \Psr\Http\Message\ResponseInterface as Response;
-use Slim\Factory\AppFactory;
-use App\Database;
+use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Http\Request;
 
-require __DIR__ . "/../vendor/autoload.php";
-$database = (new Database())->connect();
+define('LARAVEL_START', microtime(true));
 
-$app = AppFactory::create();
+/*
+|--------------------------------------------------------------------------
+| Check If Application Is Under Maintenance
+|--------------------------------------------------------------------------
+|
+| If the application is maintenance / demo mode via the "down" command we
+| will require this file so that any prerendered template can be shown
+| instead of starting the framework, which could cause an exception.
+|
+*/
 
-$app->options("/{roots:.+}", function(Request $request, Response $response, $args){
-return $response;
+if (file_exists(__DIR__.'/../storage/framework/maintenance.php')) {
+    require __DIR__.'/../storage/framework/maintenance.php';
 }
-);
 
-$app->add(function($request, $handler){
-    $response = $handler->handle($request);
-    return $response
-        ->withHeader("Access-Control-Allow-Origin","http://localhost:3000")
-        ->withHeader("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Accept, Origin, Authorization")
-        ->withHeader("Acess-Control-Allow-Methods","GET, POST, PUT, DELETE, PATCH, OPTIONS");
-});
+/*
+|--------------------------------------------------------------------------
+| Register The Auto Loader
+|--------------------------------------------------------------------------
+|
+| Composer provides a convenient, automatically generated class loader for
+| this application. We just need to utilize it! We'll simply require it
+| into the script here so we don't need to manually load our classes.
+|
+*/
 
-$app->addRoutingMiddleware();
+require __DIR__.'/../vendor/autoload.php';
 
-$app->get("/", function(Request $request, Response $response, $array) {
-    $response->getBody()->write("Hello World");
-    return $response;
-});
+/*
+|--------------------------------------------------------------------------
+| Run The Application
+|--------------------------------------------------------------------------
+|
+| Once we have the application, we can handle the incoming request using
+| the application's HTTP kernel. Then, we will send the response back
+| to this client's browser, allowing them to enjoy our application.
+|
+*/
 
-$app->post("/login", function(Request $request, Response $response, $args) {
-    $data = $request->getParsedBody();
-    $response->getBody()->write($data["name"]);
-    return $response;
-});
+$app = require_once __DIR__.'/../bootstrap/app.php';
 
-// Edit user //
+$kernel = $app->make(Kernel::class);
 
-$app->patch("/user/{name}", function(Request $request, Response $response, $args){
-    $userObject = array(
-        "id" => 23,
-        "username" => "Joe",
-        "email" => "joe@gmail.com",
-        "dateReg"=>"12/02/2012"
-    );
+$response = tap($kernel->handle(
+    $request = Request::capture()
+))->send();
 
-    $updateData = json_decode($request->getBody()->getContents());
-
-    foreach($updateData as $key => $value){
-        if($userObject[$key] == null){
-            return;
-        } else{
-            $userObject[$key] = $value;
-        }
-    }
-    $response -> getBody()->write(json_encode($userObject));
-    return $response;
-});
-
-// Retrieve all users //
-
-$app->get("/users", function(Request $request, Response $response, $args)use($database){
-    $users = $database->getAllUsers();
-    $response->getBody()->write(json_encode($users));
-    return $response->withHeader("Content-Type", "application/json");
-});
-
-// Retrieve user questions //
-
-$app->get("/questions", function(Request $request, Response $response, $args)use($database){
-    $questions = $database->getQuestionsWithOptions();
-    $response->getBody()->write(json_encode($questions));
-    return $response->withHeader("Content-Type", "application/json");
-});
-
-$app->get("/questions/answered", function(Request $request, Response $response, $args)use($database){
-    $questions = $database->getQuestionsForUsersWithAnsweredStatus(true);
-    $response->getBody()->write(json_encode($questions));
-    return $response->withHeader("Content-Type", "application/json");
-});
-
-$app->get("/questions/unanswered", function(Request $request, Response $response, $args)use($database){
-    $questions = $database->getQuestionsForUsersWithAnsweredStatus(false);
-    $response->getBody()->write(json_encode($questions));
-    return $response->withHeader("Content-Type", "application/json");
-});
-
-// Create user question //
-
-$app->post("/questions", function(Request $request, Response $response, $args)use($database){
-    $createQuestion = $database->createQuestionWithOptions($request->getParsedBody());
-    $response->getBody()->write(json_encode($createQuestion));
-    return $response->withHeader("Content-Type", "application/json");
-});
-
-$app->post("/questions/{questionId}/answer", function(Request $request, Response $response, $args)use($database){
-    $userInputData = $request->getParsedBody();
-    $addVote = $database->toggleVoteForQuestionById($args["questionId"], $userInputData["optionId"], $userInputData["userId"]);
-    $response->getBody()->write(json_encode($addVote));
-    return $response->withHeader("Content-Type", "application/json");
-});
-
-$app->run();
+$kernel->terminate($request, $response);
