@@ -3,6 +3,10 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TestingController;
+use App\Http\Controllers\UserController;
+
+
+ // ./vendor/bin/sail up 
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -14,6 +18,6 @@ use App\Http\Controllers\TestingController;
 |
 */
 
-
-Route::get('hello/{name}', 'App\Http\Controllers\TestingController@helloWorld');
-Route::post('hello', 'App\Http\Controllers\TestingController@createGreeting');
+Route::get("/users", "App\Http\Controllers\UserController@getAllUsers");
+Route::post("/users", [UserController::class, "createUser"]);
+Route::patch("/users/{id}", [UserController::class, "updateUser"]);
