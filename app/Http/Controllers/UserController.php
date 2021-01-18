@@ -13,6 +13,8 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
 
+// 
+
     function __construct(){
         $this->pdo = DB::connection()->getPdo();
     }
@@ -38,4 +40,6 @@ class UserController extends Controller
             "newName"=>$request->newName
         ]);
     }
+
+    // login? 
 }
