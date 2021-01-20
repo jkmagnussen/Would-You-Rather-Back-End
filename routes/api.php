@@ -9,7 +9,7 @@ use App\Http\Controllers\QuestionController;
  // ./vendor/bin/sail up 
 /*
 |--------------------------------------------------------------------------
-| API Routes
+| API Routess
 |--------------------------------------------------------------------------
 |
 | Here is where you can register API routes for your application. These
@@ -27,7 +27,5 @@ Route::patch("/users/{id}", [UserController::class, "updateUser"]);
 //Questions 
 
 Route::get("/questions/unanswered", [QuestionController::class, "getUnansweredQuestions"]);
-
 Route::get("/questions/answered", [QuestionController::class, "getAnsweredQuestions"]);
-
 Route::post("/questions", [QuestionController::class, "createQuestionWithOptions"]);
