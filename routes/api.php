@@ -6,7 +6,7 @@ use App\Http\Controllers\TestingController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\QuestionController;
 
- // ./vendor/bin/sail up
+ // ./vendor/bin/sail upz
 /*
 |--------------------------------------------------------------------------
 | API Routes
