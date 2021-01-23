@@ -23,6 +23,11 @@ use App\Http\Controllers\QuestionController;
 Route::get("/users", "App\Http\Controllers\UserController@getAllUsers");
 Route::post("/users", [UserController::class, "createUser"]);
 Route::patch("/users/{id}", [UserController::class, "updateUser"]);
+Route::post("/users/{id}/friends", [UserController::class, "pendingFriendRequest"]);
+Route::delete("/users/{id}/friends/{friendId}", [UserController::class, "removeFriendRow"]);
+Route::patch("/users/{id}/friends/{friendId}", [UserController::class, "acceptFriendRequest"]);
+// POST /users/joe/friends {friendId:'james'}; -> {frienderId:'Joe', friendId:'james', accepted:false}
+// PATCH /users/james/friends/joe -> UPDATE friendsList (accepted) VALUES (true) WHERE frienderId = :friendId AND friendId = :frienderId
 
 //Questions 
 
