@@ -9,7 +9,7 @@ use App\Http\Controllers\QuestionController;
  // ./vendor/bin/sail up
 /*
 |--------------------------------------------------------------------------
-| API Routes
+| API Routess
 |--------------------------------------------------------------------------
 |
 | Here is where you can register API routes for your application. These
