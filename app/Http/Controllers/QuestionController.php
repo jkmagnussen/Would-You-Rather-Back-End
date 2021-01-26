@@ -18,7 +18,7 @@ class QuestionController extends Controller {
       /* 
           {
               "authorId": 1,
-              "options":[
+              "optionss":[
                   {"title":"Option one"},
                   {"title":"Option two"}
               ]
