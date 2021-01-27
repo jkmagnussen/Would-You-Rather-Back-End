@@ -1,6 +1,8 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Models\Users;
+
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
@@ -26,9 +28,10 @@ class UserController extends Controller{
     }
 
     public function createUser(Request $request){
+        $user = Users::firstOrCreate(array("userName"=>$request->userName, "email"=>$request->email, "password"=>$request->password, "avatarUrl"=>"something.png"));
         return response()->json([
-            "userName"=>$request->userName,
-            "bio"=>$request->bio
+            "status"=>"Success",
+            "userObj"=>$user
         ]);
     }
 
@@ -39,7 +42,7 @@ class UserController extends Controller{
         ]);
     }
 
-    // Authentication
+    // Authenticationn
 
     public function pendingFriendRequest(Request $request, $userId){
         $insertFriendQuery = $this->pdo->prepare("INSERT INTO friendsList (frienderId, friendId) VALUES (:frienderId, :friendId)");
@@ -65,5 +68,4 @@ class UserController extends Controller{
         
         return response()->json(array("status"=>$success));
     } 
-
 }

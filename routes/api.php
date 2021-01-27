@@ -21,8 +21,12 @@ use App\Http\Controllers\QuestionController;
 //Users 
 
 Route::get("/users", "App\Http\Controllers\UserController@getAllUsers");
+
+// Needs finishing 
 Route::post("/users", [UserController::class, "createUser"]);
+// Needs finishing 
 Route::patch("/users/{id}", [UserController::class, "updateUser"]);
+
 Route::post("/users/{id}/friends", [UserController::class, "pendingFriendRequest"]);
 Route::delete("/users/{id}/friends/{friendId}", [UserController::class, "removeFriendRow"]);
 Route::patch("/users/{id}/friends/{friendId}", [UserController::class, "acceptFriendRequest"]);
@@ -34,3 +38,12 @@ Route::patch("/users/{id}/friends/{friendId}", [UserController::class, "acceptFr
 Route::get("/questions/unanswered", [QuestionController::class, "getUnansweredQuestions"]);
 Route::get("/questions/answered", [QuestionController::class, "getAnsweredQuestions"]);
 Route::post("/questions", [QuestionController::class, "createQuestionWithOptions"]);
+
+// Route delete question 
+// Route update Question ute delete question 
+// Route update Question ute delete question 
+// Route update Question ute delete question 
+// Route update Question ute delete question 
+// Route update Question ute delete question 
+// Route update Question ute delete question 
+// Route update Question 
