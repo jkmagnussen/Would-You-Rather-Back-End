@@ -42,7 +42,7 @@ class UserController extends Controller{
         ]);
     }
 
-    // Authenticationn
+    // Authentication
 
     public function pendingFriendRequest(Request $request, $userId){
         $insertFriendQuery = $this->pdo->prepare("INSERT INTO friendsList (frienderId, friendId) VALUES (:frienderId, :friendId)");
