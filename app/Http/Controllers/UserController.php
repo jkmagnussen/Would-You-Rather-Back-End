@@ -36,13 +36,12 @@ class UserController extends Controller{
     }
 
     public function updateUser(Request $request, $id){
-        return response()->json([
-            "updateUserId"=>$id,
-            "newName"=>$request->newName
-        ]);
+        $editUserInfo = $this->pdo->prepare("INSERT INTO Users (id, userName, email, avatarUrl, password) VALUES (:id, :userName, :email, :avatarUrl, :password) ");
+        $success = $editUserInfo->execute(array("id"=>$id, "userName"=>$request->$userName, "email"=>$request->$email, "avatarUrl"=>$request->$avatarUrl, "password"=>$request->$password));
+        return response()->json(array("status"=>$success));
     }
 
-    // Authenticationn
+    // Authentication
 
     public function pendingFriendRequest(Request $request, $userId){
         $insertFriendQuery = $this->pdo->prepare("INSERT INTO friendsList (frienderId, friendId) VALUES (:frienderId, :friendId)");
