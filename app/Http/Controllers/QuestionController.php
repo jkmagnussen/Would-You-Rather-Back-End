@@ -93,42 +93,40 @@ class QuestionController extends Controller {
       return response()->json($this->structureQuestionsData($databaseResults));
     }
 
+public function editQuestion(Request $request, $id){
+
+  // question structure 
+  /*
+    [
+      {title:"Option one"}, // 0
+      {title:"Option two"} // 1
+    ]
+  */
+  
+ // $editQuestionQuery = $this->pdo->prepare("UPDATE")
+ $selectQuestionOptionsQuery = $this->pdo->prepare("SELECT id FROM optionsForQuestions WHERE questionId = :questionId ");
+  /*
+      JSON example of results of above query (options of questions ids so we know whichn one to edit)
+      [
+        {id: 32},
+        {id: 33}
+      ] 
+  */
+  $selectQuestionOptionsQuery->execute(array($id));
+  $questionOptionsIds = $selectQuestionOptionsQuery->fetchAll();
+  foreach((array) $questionOptionsIds as $key=>$answerRow){
     /*
-
-    public function FilterAnsweredQuestions(Request $request){
-      return response()->json([
-        "hello"=>$request->hello,
-        ""=>$request->
-      ]);
-    }
-
-    public function FilterUnansweredQuestions(Request $request){
-      return response()->json([
-        ""=>$request->,
-        ""=>$request->
-      ]);
-    }
-
-    public function createQuestion(Request $request){
-      return response()->json([
-        ""=>$request->,
-        ""=>$request->
-      ]);
-    }
-
-    public function addVote(Request $request){
-      return response()->json([
-        ""=>$request->,
-        ""=>$request->
-      ]);
-    }
-
-    public function removeVote(Request $request){
-      return response()->json([
-        ""=>$request->,
-        ""=>$request->
-      ]);
-      
-    }
+      $answerRow = array("id"=>32)
+      $key = 0
     */
+    $editQuestionQuery = $this->pdo->prepare("UPDATE optionsForQuestions SET title = :title WHERE :optionId");
+    $editQuestionQuery->execute(array($request->options[$key]["title"], $answerRow["id"] ));
+  }
+}
+
+    public function deleteQuestion(Request $request, $id){
+      $deleteQuestionQuery = $this->pdo->prepare("DELETE FROM questions WHERE id=?");
+      return response()->json(array("status"=>$deleteQuestionQuery->execute(array($id))));
+    }
+
 }

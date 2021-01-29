@@ -36,8 +36,8 @@ class UserController extends Controller{
     }
 
     public function updateUser(Request $request, $id){
-        $editUserInfo = $this->pdo->prepare("INSERT INTO Users (id, userName, email, avatarUrl, password) VALUES (:id, :userName, :email, :avatarUrl, :password) ");
-        $success = $editUserInfo->execute(array("id"=>$id, "userName"=>$request->$userName, "email"=>$request->$email, "avatarUrl"=>$request->$avatarUrl, "password"=>$request->$password));
+        $editUserInfo = $this->pdo->prepare("UPDATE Users SET userName = ?, email = ?, avatarUrl = ?, password = ? WHERE id=?");
+        $success = $editUserInfo->execute(array($request->userName, $request->email, $request->avatarUrl, $request->password, $id));
         return response()->json(array("status"=>$success));
     }
 

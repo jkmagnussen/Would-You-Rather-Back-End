@@ -39,7 +39,13 @@ Route::get("/questions/unanswered", [QuestionController::class, "getUnansweredQu
 Route::get("/questions/answered", [QuestionController::class, "getAnsweredQuestions"]);
 Route::post("/questions", [QuestionController::class, "createQuestionWithOptions"]);
 
+Route::delete("/questions/{id}", [QuestionController::class, "deleteQuestion"]);
+Route::patch("/questions/{id}", [QuestionController::class, "editQuestion"]);
+
 // Route delete question 
+// Route update Question ute delete question 
+// Route update Question ute delete question 
+// Route update Question ute delete question 
 // Route update Question ute delete question 
 // Route update Question ute delete question 
 // Route update Question ute delete question 
