@@ -95,7 +95,7 @@ class QuestionController extends Controller {
 
 public function editQuestion(Request $request, $id){
 
-  // question structuree
+  // question structure
   /*
     [
       {title:"Option one"}, // 0
