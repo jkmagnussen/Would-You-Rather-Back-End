@@ -6,6 +6,8 @@ use App\Models\Users;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
+use Illuminate\Support\Facades\Auth;
+
 class UserController extends Controller{
     /**
      * Handle the incoming request.
@@ -17,6 +19,7 @@ class UserController extends Controller{
 
     function __construct(){
         $this->pdo = DB::connection()->getPdo();
+        $this->middleware('auth:api', ["except"=>"login"]);
     }
 
     public function getAllUsers(){
@@ -42,6 +45,14 @@ class UserController extends Controller{
     }
 
     // Authentication
+    public function login(Request $request){    
+        $token = auth()->attempt(request(['email', 'password']));
+        
+        if(!$token){
+            return response()->json(["status"=>"failed, wrong password or email"]);
+        }
+        return $this->respondWithToken($token);
+    }
 
     public function pendingFriendRequest(Request $request, $userId){
         $insertFriendQuery = $this->pdo->prepare("INSERT INTO friendsList (frienderId, friendId) VALUES (:frienderId, :friendId)");
@@ -67,4 +78,12 @@ class UserController extends Controller{
         
         return response()->json(array("status"=>$success));
     } 
+
+    protected function respondWithToken($token){
+        return response()->json([
+            "access_token" => $token,
+            "token_type" => "bearer",
+            "expires_in" => auth()->factory()->getTTL() * 60
+        ]);
+    }
 }

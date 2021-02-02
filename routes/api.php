@@ -20,16 +20,23 @@ use App\Http\Controllers\QuestionController;
 
 //Users 
 
-Route::get("/users", "App\Http\Controllers\UserController@getAllUsers");
+Route::group([
+    "middleware"=>"api",
+    "prefix"=>"auth"
+], function($router){
+    Route::get("/users", "App\Http\Controllers\UserController@getAllUsers");
+    // Needs finishing 
+    Route::post("/users", [UserController::class, "createUser"]);
+    Route::post("/users/session", [UserController::class, "login"]);
+    // Needs finishing 
+    Route::patch("/users/{id}", [UserController::class, "updateUser"]);
 
-// Needs finishing 
-Route::post("/users", [UserController::class, "createUser"]);
-// Needs finishing 
-Route::patch("/users/{id}", [UserController::class, "updateUser"]);
+    Route::post("/users/{id}/friends", [UserController::class, "pendingFriendRequest"]);
+    Route::delete("/users/{id}/friends/{friendId}", [UserController::class, "removeFriendRow"]);
+    Route::patch("/users/{id}/friends/{friendId}", [UserController::class, "acceptFriendRequest"]);
+});
 
-Route::post("/users/{id}/friends", [UserController::class, "pendingFriendRequest"]);
-Route::delete("/users/{id}/friends/{friendId}", [UserController::class, "removeFriendRow"]);
-Route::patch("/users/{id}/friends/{friendId}", [UserController::class, "acceptFriendRequest"]);
+
 // POST /users/joe/friends {friendId:'james'}; -> {frienderId:'Joe', friendId:'james', accepted:false}
 // PATCH /users/james/friends/joe -> UPDATE friendsList (accepted) VALUES (true) WHERE frienderId = :friendId AND friendId = :frienderId
 

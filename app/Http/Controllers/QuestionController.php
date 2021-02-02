@@ -93,40 +93,16 @@ class QuestionController extends Controller {
       return response()->json($this->structureQuestionsData($databaseResults));
     }
 
-public function editQuestion(Request $request, $id){
-
-  // question structurez
-  /*
-    [
-      {title:"Option one"}, // 0
-      {title:"Option two"} // 1
-    ]
-  */
-  
- // $editQuestionQuery = $this->pdo->prepare("UPDATE")
- $selectQuestionOptionsQuery = $this->pdo->prepare("SELECT id FROM optionsForQuestions WHERE questionId = :questionId ");
-  /*
-      JSON example of results of above query (options of questions ids so we know whichn one to edit)
-      [
-        {id: 32},
-        {id: 33}
-      ] 
-  */
-  $selectQuestionOptionsQuery->execute(array($id));
-  $questionOptionsIds = $selectQuestionOptionsQuery->fetchAll();
-  foreach((array) $questionOptionsIds as $key=>$answerRow){
-    /*
-      $answerRow = array("id"=>32)
-      $key = 0
-    */
-    $editQuestionQuery = $this->pdo->prepare("UPDATE optionsForQuestions SET title = :title WHERE :optionId");
-    $editQuestionQuery->execute(array($request->options[$key]["title"], $answerRow["id"] ));
-  }
-}
+    public function editQuestion(Request $request, $id){
+      foreach((array) $request->options as $option){
+        $editQuestionQuery = $this->pdo->prepare("UPDATE optionsForQuestions SET title = ? WHERE questionId = ? AND id = ?");
+        $editQuestionQuery->execute(array($option["title"], $id, $option['id'] ));
+      }
+      return response()->json(array("status"=>true));
+    }
 
     public function deleteQuestion(Request $request, $id){
       $deleteQuestionQuery = $this->pdo->prepare("DELETE FROM questions WHERE id=?");
       return response()->json(array("status"=>$deleteQuestionQuery->execute(array($id))));
     }
-
 }
