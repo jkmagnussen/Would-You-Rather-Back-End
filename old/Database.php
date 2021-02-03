@@ -7,7 +7,7 @@ $dotenv->load(__DIR__."/../.env");
 
  /*
  
-FROM .ENV 
+FROmmm .ENV 
 
 DB_HOST=sql146.main-hosting.eu
 DB_NAME=u490444716_wouldYouRather
