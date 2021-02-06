@@ -19,7 +19,7 @@ class UserController extends Controller{
 
     function __construct(){
         $this->pdo = DB::connection()->getPdo();
-        $this->middleware('auth:api', ["except"=>"login"]);
+        $this->middleware('auth:api', ["except"=>["login", "createUser"]]);
     }
 
     public function getAllUsers(){
@@ -31,7 +31,7 @@ class UserController extends Controller{
     }
 
     public function createUser(Request $request){
-        $user = Users::firstOrCreate(array("userName"=>$request->userName, "email"=>$request->email, "password"=>$request->password, "avatarUrl"=>"something.png"));
+        $user = Users::firstOrCreate(array("userName"=>$request->userName, "email"=>$request->email, "password"=>\Hash::make($request->password), "avatarUrl"=>"something.png"));
         return response()->json([
             "status"=>"Success",
             "userObj"=>$user

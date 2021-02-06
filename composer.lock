@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "206fc2004acbf554e3f0d6fb31190563",
+    "content-hash": "41ed6fc2045ff2510e14aa9fcec30aa1",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -117,6 +117,54 @@
                 }
             ],
             "time": "2020-08-18T23:57:15+00:00"
+        },
+        {
+            "name": "dipenparmar12/laravel-query-log",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dipenparmar12/laravel-query-log.git",
+                "reference": "ed99f64c4cdb8d31823fe11b2c605fd4cf95d24f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/dipenparmar12/laravel-query-log/zipball/ed99f64c4cdb8d31823fe11b2c605fd4cf95d24f",
+                "reference": "ed99f64c4cdb8d31823fe11b2c605fd4cf95d24f",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.1"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Dipenparmar12\\QueryLog\\StoreQueryLogServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Dipenparmar12\\QueryLog\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Dipen parmar",
+                    "email": "dipenparmar12@gmail.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "A Laravel package for log queries in user defined log channel. Your all queries will save in the log file, and you can view it anytime.",
+            "support": {
+                "issues": "https://github.com/dipenparmar12/laravel-query-log/issues",
+                "source": "https://github.com/dipenparmar12/laravel-query-log/tree/1.0.0"
+            },
+            "time": "2020-07-18T11:58:34+00:00"
         },
         {
             "name": "dnoegel/php-xdg-base-dir",
