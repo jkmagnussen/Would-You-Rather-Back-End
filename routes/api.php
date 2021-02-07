@@ -18,7 +18,7 @@ use App\Http\Controllers\QuestionController;
 |
 */
 
-//Users 
+//Userss
 
 Route::group([
     "middleware"=>"api",
@@ -49,7 +49,7 @@ Route::post("/questions", [QuestionController::class, "createQuestionWithOptions
 Route::delete("/questions/{id}", [QuestionController::class, "deleteQuestion"]);
 Route::patch("/questions/{id}", [QuestionController::class, "editQuestion"]);
 
-// Route delete question 
+// Route delete question n
 // Route update Question ute delete question 
 // Route update Question ute delete question 
 // Route update Question ute delete question 
