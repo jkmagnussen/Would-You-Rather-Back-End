@@ -21,19 +21,18 @@ use App\Http\Controllers\QuestionController;
 //Userss
 
 Route::group([
-    "middleware"=>"api",
-    "prefix"=>"auth"
+    "middleware"=>"api"
 ], function($router){
-    Route::get("/users", "App\Http\Controllers\UserController@getAllUsers");
+    $router->get("/users", [UserController::class, "getAllUsers"]);
     // Needs finishing 
-    Route::post("/users", [UserController::class, "createUser"]);
-    Route::post("/users/session", [UserController::class, "login"]);
+    $router->post("/users", [UserController::class, "createUser"]);
+    $router->post("/users/session", [UserController::class, "login"]);
     // Needs finishing 
-    Route::patch("/users/{id}", [UserController::class, "updateUser"]);
+    $router->patch("/users/{id}", [UserController::class, "updateUser"]);
 
-    Route::post("/users/{id}/friends", [UserController::class, "pendingFriendRequest"]);
-    Route::delete("/users/{id}/friends/{friendId}", [UserController::class, "removeFriendRow"]);
-    Route::patch("/users/{id}/friends/{friendId}", [UserController::class, "acceptFriendRequest"]);
+    $router->post("/users/{id}/friends", [UserController::class, "pendingFriendRequest"]);
+    $router->delete("/users/{id}/friends/{friendId}", [UserController::class, "removeFriendRow"]);
+    $router->patch("/users/{id}/friends/{friendId}", [UserController::class, "acceptFriendRequest"]);
 });
 
 

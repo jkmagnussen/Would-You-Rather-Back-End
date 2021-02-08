@@ -24,7 +24,7 @@ class UserController extends Controller{
 
     public function getAllUsers(){
 
-        $usersInfo = $this->pdo->prepare("SELECT id, username, password,  avatarUrl FROM users");
+        $usersInfo = $this->pdo->prepare("SELECT id, username, password,  avatarUrl FROM Users");
         $usersInfo->execute();
 
         return response()->json($usersInfo->fetchAll(\PDO::FETCH_ASSOC));
