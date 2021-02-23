@@ -5,7 +5,7 @@ use App\Models\Users;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
-
+use Validator;
 use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller{
@@ -15,7 +15,6 @@ class UserController extends Controller{
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-// 
 
     function __construct(){
         $this->pdo = DB::connection()->getPdo();
@@ -30,6 +29,10 @@ class UserController extends Controller{
         return response()->json($usersInfo->fetchAll(\PDO::FETCH_ASSOC));
     }
 
+    public function getAuthenticatedUserProfile(Request $request){
+        return response()->json(auth()->user()); 
+    }   
+
     public function createUser(Request $request){
         $user = Users::firstOrCreate(array("userName"=>$request->userName, "email"=>$request->email, "password"=>\Hash::make($request->password), "avatarUrl"=>"something.png"));
         return response()->json([
@@ -38,9 +41,25 @@ class UserController extends Controller{
         ]);
     }
 
+    public function putAvatar(Request $request, $id){
+        if($id != $request->user()->id){
+            return response()->json(array("301"=>"error"));
+        }
+        $validator = Validator::make(array("avatar"=>$request->file("avatar")), array("avatar"=>"mimes:png"));
+        if($validator->fails()){
+            return response()->json(array("error"=>"error, please uopload a valid image."));
+        }
+        $fileName = $request->user()->id;
+        $fileFormat = $request->file("avatar")->extension();
+        $path = $request->file("avatar")->storeAs("avatars", "{$fileName}.{$fileFormat}");
+        return response()->json(array("path"=>$path));
+    }
+
+    
+
     public function updateUser(Request $request, $id){
-        $editUserInfo = $this->pdo->prepare("UPDATE Users SET userName = ?, email = ?, avatarUrl = ?, password = ? WHERE id=?");
-        $success = $editUserInfo->execute(array($request->userName, $request->email, $request->avatarUrl, $request->password, $id));
+        $editUserInfo = $this->pdo->prepare("UPDATE Users SET userName = ?, email = ?, avatarUrl = ? WHERE id=?");
+        $success = $editUserInfo->execute(array($request->userName, $request->email, $request->avatarUrl, $id));
         return response()->json(array("status"=>$success));
     }
 

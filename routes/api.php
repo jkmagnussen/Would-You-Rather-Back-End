@@ -18,7 +18,7 @@ use App\Http\Controllers\QuestionController;
 |
 */
 
-//Userss
+//Users
 
 Route::group([
     "middleware"=>"api"
@@ -28,8 +28,10 @@ Route::group([
     $router->post("/users", [UserController::class, "createUser"]);
     $router->post("/users/session", [UserController::class, "login"]);
     // Needs finishing 
-    $router->patch("/users/{id}", [UserController::class, "updateUser"]);
-
+    $router->put("/users/{id}", [UserController::class, "updateUser"]);
+    $router->post("/users/{id}/avatar", [UserController::class, "putAvatar"]);
+    $router->get("/users/me", [UserController::class, "getAuthenticatedUserProfile"]);
+    
     $router->post("/users/{id}/friends", [UserController::class, "pendingFriendRequest"]);
     $router->delete("/users/{id}/friends/{friendId}", [UserController::class, "removeFriendRow"]);
     $router->patch("/users/{id}/friends/{friendId}", [UserController::class, "acceptFriendRequest"]);
@@ -40,13 +42,16 @@ Route::group([
 // PATCH /users/james/friends/joe -> UPDATE friendsList (accepted) VALUES (true) WHERE frienderId = :friendId AND friendId = :frienderId
 
 //Questions 
+Route::group([
+    "middleware"=>"api"
+],function($router){
+    $router->get("/questions/unanswered", [QuestionController::class, "getUnansweredQuestions"]);
+    $router->get("/questions/answered", [QuestionController::class, "getAnsweredQuestions"]);
+    $router->post("/questions", [QuestionController::class, "createQuestionWithOptions"]);
+    $router->delete("/questions/{id}", [QuestionController::class, "deleteQuestion"]);
+    $router->patch("/questions/{id}", [QuestionController::class, "editQuestion"]);
+});
 
-Route::get("/questions/unanswered", [QuestionController::class, "getUnansweredQuestions"]);
-Route::get("/questions/answered", [QuestionController::class, "getAnsweredQuestions"]);
-Route::post("/questions", [QuestionController::class, "createQuestionWithOptions"]);
-
-Route::delete("/questions/{id}", [QuestionController::class, "deleteQuestion"]);
-Route::patch("/questions/{id}", [QuestionController::class, "editQuestion"]);
 
 // Route delete question n
 // Route update Question ute delete question 
