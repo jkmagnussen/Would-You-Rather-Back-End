@@ -33,8 +33,25 @@ class UserController extends Controller{
         return response()->json(auth()->user()); 
     }   
 
+    private function saveAvatarForUser($avatar, $user){
+        $validator = Validator::make(array("avatar"=>$avatar), array("avatar"=>"mimes:png"));
+        if($validator->fails()){
+            return false;
+        }
+        $fileName = $user->id;
+        $fileFormat = $avatar->extension();
+        $path = $avatar->storeAs("avatars", "{$fileName}.{$fileFormat}");
+        return true;
+    }
+
     public function createUser(Request $request){
         $user = Users::firstOrCreate(array("userName"=>$request->userName, "email"=>$request->email, "password"=>\Hash::make($request->password), "avatarUrl"=>"something.png"));
+        
+        $avatarStatus = $this->saveAvatarForUser($request->file("avatar"), $user);
+        
+        if(!$avatarStatus){
+            return response()->json(["error" => "invalid avatar please ensure a valid image has been selected."]);
+        }
         return response()->json([
             "status"=>"Success",
             "userObj"=>$user
@@ -45,15 +62,13 @@ class UserController extends Controller{
         if($id != $request->user()->id){
             return response()->json(array("301"=>"error"));
         }
-        $validator = Validator::make(array("avatar"=>$request->file("avatar")), array("avatar"=>"mimes:png"));
-        if($validator->fails()){
-            return response()->json(array("error"=>"error, please uopload a valid image."));
+        $avatarStatus = $this->saveAvatarForUser($request->file("avatar"), $request->user());
+        if(!$avatarStatus){
+            return response()->json(["error" => "invalid avatar please ensure a valid image has been selected."]);
         }
-        $fileName = $request->user()->id;
-        $fileFormat = $request->file("avatar")->extension();
-        $path = $request->file("avatar")->storeAs("avatars", "{$fileName}.{$fileFormat}");
-        return response()->json(array("path"=>$path));
+        return response()->json(array("status"=>"success"));
     }
+
 
     
 

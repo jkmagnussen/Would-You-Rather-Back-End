@@ -5,6 +5,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Validator;
+use Intervention\Image\ImageManagerStatic as Image;
+use Illuminate\Support\Facades\Storage;
+
 
 class QuestionController extends Controller {
      
@@ -13,9 +16,17 @@ class QuestionController extends Controller {
         $this->middleware("auth:api");
     }
 
+    private function saveImageForAnswerWithId($img, $id){
+      $imageFormat = $img->extension();
+      $imagePath = $img->path();
+      $encodedImageFile = Image::make($imagePath)->encode("png", 80);
+      $savedImagePathName = "optionPictures/{$id}.{$imageFormat}";
+      Storage::disk("local")->put($savedImagePathName, $encodedImageFile);
+    }
+
     public function createQuestionWithOptions(Request $request){
 
-      $validator = Validator::make(["optionPicture1"=>$request->file("optionPicture1"), "optionPicture2"=>$request->file("optionPicture2")],["optionPicture1"=>["required", "mimes:png"],"optionPicture2"=>["required", "mimes:png"]]);
+      $validator = Validator::make(["optionPicture1"=>$request->file("optionPicture1"), "optionPicture2"=>$request->file("optionPicture2")],["optionPicture1"=>["required", "mimes:png,jpg,jpeg"],"optionPicture2"=>["required", "mimes:png,jpg,jpeg"]]);
 
       if($validator->fails()){
         return response()->json(["error"=>"Please ensure that both option pictures are present."]);
@@ -25,26 +36,15 @@ class QuestionController extends Controller {
       
       $this->pdo->prepare("INSERT INTO questions (authorId, timeStamp) VALUES (?, NOW())")->execute(array($request->user()->id));
       $questionId = $this->pdo->lastInsertId();
-      /* 
-          {
-              authorId:1,
-              status:"Hello world",
-              optionTitle1: "Jump",
-              optionTitle2: "Run",
-              optionPicture1: File(),
-              optionPicture2: File()
-          }
-      */
 
       $this->pdo->prepare("INSERT INTO optionsForQuestions (questionId, title) VALUES(?, ?)")->execute(array($questionId, $request->optionTitle1));
-      $fileFormat1 = $request->file("optionPicture1")->extension();
-      $request->file("optionPicture1")->storeAs("optionPictures", "{$this->pdo->lastInsertId()}.{$fileFormat1}");
-          
+      $this->saveImageForAnswerWithId($request->file("optionPicture1"), $this->pdo->lastInsertId());
+      
       $this->pdo->prepare("INSERT INTO optionsForQuestions (questionId, title) VALUES(?, ?)")->execute(array($questionId, $request->optionTitle2));
-      $fileFormat2 = $request->file("optionPicture2")->extension();
-      $request->file("optionPicture2")->storeAs("optionPictures", "{$this->pdo->lastInsertId()}.{$fileFormat2}");
+      $this->saveImageForAnswerWithId($request->file("optionPicture2"), $this->pdo->lastInsertId());
       
       $this->pdo->commit();
+
       return response()->json(array("status"=>"success"));
     }
 
