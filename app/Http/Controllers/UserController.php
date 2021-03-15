@@ -34,7 +34,7 @@ class UserController extends Controller{
     }   
 
     private function saveAvatarForUser($avatar, $user){
-        $validator = Validator::make(array("avatar"=>$avatar), array("avatar"=>"mimes:png"));
+        $validator = Validator::make(array("avatar"=>$avatar), array("avatar"=>"mimes:png,jpg,jpeg"));
         if($validator->fails()){
             return false;
         }
@@ -45,17 +45,21 @@ class UserController extends Controller{
     }
 
     public function createUser(Request $request){
+        $validator = Validator::make($request->post(), ["userName"=>"required|unique:Users|max:35", "password"=>"required|max:120|min:8", "email"=>"required|email:rfc,dns"]); 
+        if($validator->fails()){
+           return response()->json($validator->errors());
+        }
         $user = Users::firstOrCreate(array("userName"=>$request->userName, "email"=>$request->email, "password"=>\Hash::make($request->password), "avatarUrl"=>"something.png"));
         
-        $avatarStatus = $this->saveAvatarForUser($request->file("avatar"), $user);
-        
-        if(!$avatarStatus){
-            return response()->json(["error" => "invalid avatar please ensure a valid image has been selected."]);
+        if($request->file("avatar")){
+            $avatarStatus = $this->saveAvatarForUser($request->file("avatar"), $user);
+            
+            if(!$avatarStatus){
+                return response()->json(["error" => "invalid avatar please ensure a valid image has been selected."]);
+            }
         }
-        return response()->json([
-            "status"=>"Success",
-            "userObj"=>$user
-        ]);
+        
+        return $this->login($request);
     }
 
     public function putAvatar(Request $request, $id){
@@ -81,7 +85,6 @@ class UserController extends Controller{
     // Authentication
     public function login(Request $request){    
         $token = auth()->attempt(request(['email', 'password']));
-        
         if(!$token){
             return response()->json(["status"=>"failed, wrong password or email"]);
         }
